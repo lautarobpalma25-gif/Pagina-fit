@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PickFood - Elegí. Cociná. Aprendé.</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .hide { display: none !important; }
+        
+        /* Toast Animation */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate { animation: slideUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative pb-20 md:pb-0">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-24 md:bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-[90%] max-w-sm"></div>
+
+    <!-- ================= AUTH VIEW (LOGIN / REGISTER) ================= -->
+    <div id="auth-view" class="flex w-full min-h-screen bg-white">
+        <!-- Lado Izquierdo: Imagen Hero -->
+        <div class="hidden lg:flex w-1/2 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1495521821757-a1efb6729352?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
+            <!-- Overlay degradado oscuro -->
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10"></div>
+            
+            <!-- Contenido sobre la imagen -->
+            <div class="absolute bottom-16 left-16 right-16 text-white animate-[slideUp_0.8s_ease-out]">
+                <div class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-xl shadow-brand-500/40">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <h2 class="text-5xl font-black mb-4 tracking-tight leading-tight">Tu cocina,<br>sin límites.</h2>
+                <p class="text-lg text-slate-200 font-medium max-w-md leading-relaxed">Elegí tus ingredientes, descubrí recetas increíbles y aprendé a aprovechar al máximo tu comida, sin gastar de más.</p>
+            </div>
+        </div>
+
+        <!-- Lado Derecho: Formulario Moderno -->
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 xl:p-24 relative overflow-hidden">
+            <!-- Elementos decorativos de fondo -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-brand-50 blur-3xl opacity-50 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-brand-50 blur-3xl opacity-50 pointer-events-none"></div>
+
+            <div class="w-full max-w-md relative z-10 animate-[slideUp_0.5s_ease-out]">
+                
+                <div class="lg:hidden text-center mb-8">
+                    <div class="w-16 h-16 bg-brand-500 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-brand-500/40">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                </div>
+
+                <div class="mb-10 text-center lg:text-left">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Bienvenido a PickFood</h1>
+                    <p class="text-slate-500 text-base" id="auth-subtitle">Ingresá tus datos para abrir tu heladera virtual.</p>
+                </div>
+
+                <form id="auth-form" class="space-y-5">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-bold text-slate-700 ml-1">Correo electrónico</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-regular fa-envelope text-slate-400"></i>
+                            </div>
+                            <input type="email" id="auth-email" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition text-slate-700 font-medium" placeholder="estudiante@utn.edu.ar">
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label class="block text-sm font-bold text-slate-700 ml-1">Contraseña</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-slate-400"></i>
+                            </div>
+                            <input type="password" id="auth-password" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition text-slate-700 font-medium" placeholder="••••••••">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="auth-submit-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-slate-900/20 flex justify-center items-center gap-2 mt-2 group">
+                        <span>Iniciar Sesión</span>
+                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <div class="mt-8 text-center lg:text-left">
+                    <p class="text-slate-500 text-sm font-medium">
+                        <span id="auth-toggle-text">¿No tenés cuenta?</span> 
+                        <button id="toggle-auth-mode" class="font-bold text-brand-600 hover:text-brand-700 hover:underline transition ml-1">
+                            Registrate acá
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APP VIEW (DASHBOARD) ================= -->
+    <div id="app-view" class="hide flex-col min-h-screen">
+        
+        <!-- Navbar -->
+        <nav class="glass sticky top-0 z-40 border-b border-slate-200 shadow-sm">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-brand-500 text-white rounded-xl flex items-center justify-center text-xl shadow-md">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight hidden sm:block">PickFood</h1>
+                        <div class="flex items-center gap-1 mt-0.5">
+                            <i class="fa-solid fa-medal text-amber-500 text-xs"></i>
+                            <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Nivel: Sobreviviente del Microondas</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="user-email-display" class="text-sm font-semibold text-slate-600 hidden sm:block"></span>
+                    <button id="btn-logout" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Salir</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 space-y-6">
+            
+            <!-- Gamified Stats Dashboard -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <span class="text-slate-500 text-xs font-bold uppercase mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-piggy-bank text-brand-500"></i> Ahorro Mensual
+                    </span>
+                    <span class="text-2xl font-black text-slate-900">$12.500</span>
+                </div>
+                <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <span class="text-slate-500 text-xs font-bold uppercase mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-fire text-orange-500"></i> Racha de días
+                    </span>
+                    <span class="text-2xl font-black text-slate-900">4 Días</span>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <button id="btn-roulette" class="w-full h-full min-h-[5rem] bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-600 hover:to-emerald-700 text-white rounded-3xl shadow-lg shadow-brand-500/30 flex items-center justify-center gap-3 transition transform hover:scale-105">
+                        <i class="fa-solid fa-dice text-3xl"></i>
+                        <div class="text-left">
+                            <span class="block font-black text-lg">Modo Ruleta</span>
+                            <span class="block text-xs font-medium text-brand-100">¡Sorprendeme!</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Grid: Inventory & Recipes -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                
+                <!-- Mi Inventario -->
+                <div class="md:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <h2 class="font-extrabold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-basket-shopping text-brand-500"></i> Mi Inventario
+                        </h2>
+                        <button id="btn-save-inventory" class="text-xs bg-brand-100 hover:bg-brand-200 text-brand-700 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Guardar
+                        </button>
+                    </div>
+                    
+                    <div class="p-5 flex-grow">
+                        <form id="add-ingredient-form" class="flex gap-2 mb-4">
+                            <input type="text" id="new-ingredient-input" placeholder="Ej: Tomate, Fideos..." class="flex-grow px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none">
+                            <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-bold transition">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </form>
+
+                        <div id="inventory-list" class="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto">
+                            <!-- Items will be injected here via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recetas Recomendadas -->
+                <div class="md:col-span-7 space-y-4">
+                    <h2 class="font-extrabold text-slate-900 text-xl flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Recetas Recomendadas
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <!-- Recipe 1: 100% Match -->
+                        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition">
+                            <div class="relative h-40 bg-slate-200">
+                                <img src="https://images.unsplash.com/photo-1584278860011-64da921782e4?auto=format&fit=crop&w=600&q=80" alt="Tortilla" class="w-full h-full object-cover">
+                                <div class="absolute top-3 left-3 bg-brand-500 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                    <i class="fa-solid fa-check-circle"></i> 100% Match
+                                </div>
+                            </div>
+                            <div class="p-4 flex flex-col flex-grow justify-between">
+                                <div>
+                                    <h3 class="font-extrabold text-slate-900 leading-tight mb-1">Tortilla Rápida de Papa</h3>
+                                    <p class="text-xs text-slate-500 font-semibold mb-3"><i class="fa-solid fa-clock mr-1 text-slate-400"></i> 15 min • Fácil</p>
+                                </div>
+                                <button class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-fire-burner"></i> ¡Cocinar!
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recipe 2: 80% Match -->
+                        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition">
+                            <div class="relative h-40 bg-slate-200">
+                                <img src="https://images.unsplash.com/photo-1621996346565-e3def616400c?auto=format&fit=crop&w=600&q=80" alt="Pasta" class="w-full h-full object-cover">
+                                <div class="absolute top-3 left-3 bg-amber-500 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> 80% Match
+                                </div>
+                            </div>
+                            <div class="p-4 flex flex-col flex-grow justify-between">
+                                <div>
+                                    <h3 class="font-extrabold text-slate-900 leading-tight mb-1">Pasta Cremosa</h3>
+                                    <p class="text-xs text-slate-500 font-semibold mb-2"><i class="fa-solid fa-clock mr-1 text-slate-400"></i> 12 min • Económico</p>
+                                    <p class="text-[10px] text-rose-500 font-bold mb-3 bg-rose-50 inline-block px-2 py-1 rounded-lg">
+                                        Falta: Crema de leche
+                                    </p>
+                                </div>
+                                <button class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-cart-plus"></i> A Lista de Compras
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mobile Bottom Navigation Placeholder -->
+        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <div class="flex justify-around items-center h-16 px-2">
+                <button class="flex flex-col items-center justify-center w-full h-full text-brand-600 transition">
+                    <i class="fa-solid fa-house text-lg mb-1"></i>
+                    <span class="text-[10px] font-bold">Inicio</span>
+                </button>
+                <button class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-basket-shopping text-lg mb-1"></i>
+                    <span class="text-[10px] font-bold">Inventario</span>
+                </button>
+                <button class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-cart-shopping text-lg mb-1"></i>
+                    <span class="text-[10px] font-bold">Compras</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        // Firebase Imports (v11.6.1)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 1. Initialize Firebase
+        // Fallback to a mock config if __firebase_config is not provided by the environment
+        const defaultFirebaseConfig = {
+            apiKey: "mock-api-key",
+            authDomain: "pickfood-mock.firebaseapp.com",
+            projectId: "pickfood-mock",
+            storageBucket: "pickfood-mock.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pickfood-default-app';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 2. Application State
+        let isLoginMode = true;
+        let currentUser = null;
+        let inventory = ["Fideos", "Huevo", "Cebolla"]; // Default mock data
+        let isMocking = firebaseConfig.apiKey === "mock-api-key"; // True if running outside the collaborative env
+
+        // 3. DOM Elements
+        const authView = document.getElementById('auth-view');
+        const appView = document.getElementById('app-view');
+        
+        const authForm = document.getElementById('auth-form');
+        const toggleAuthBtn = document.getElementById('toggle-auth-mode');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authSubtitle = document.getElementById('auth-subtitle');
+        const emailInput = document.getElementById('auth-email');
+        const passInput = document.getElementById('auth-password');
+        
+        const btnLogout = document.getElementById('btn-logout');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        
+        const inventoryList = document.getElementById('inventory-list');
+        const addIngredientForm = document.getElementById('add-ingredient-form');
+        const newIngredientInput = document.getElementById('new-ingredient-input');
+        const btnSaveInventory = document.getElementById('btn-save-inventory');
+        const btnRoulette = document.getElementById('btn-roulette');
+
+        // 4. UI Functions
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-brand-600' : (type === 'error' ? 'bg-rose-500' : 'bg-slate-800');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle');
+            
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-2xl shadow-xl font-bold text-sm flex items-center gap-2 toast-animate`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            
+            // Actualizamos los textos del formulario moderno
+            authSubmitBtn.innerHTML = isLoginMode 
+                ? '<span>Iniciar Sesión</span> <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>' 
+                : '<span>Crear mi Cuenta</span> <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>';
+            
+            authSubtitle.innerText = isLoginMode 
+                ? 'Ingresá tus datos para abrir tu heladera virtual.' 
+                : 'Unite y empezá a ahorrar plata y tiempo hoy.';
+            
+            document.getElementById('auth-toggle-text').innerText = isLoginMode ? '¿No tenés cuenta?' : '¿Ya tenés cuenta?';
+            toggleAuthBtn.innerText = isLoginMode ? 'Registrate acá' : 'Iniciá sesión';
+        }
+
+        // 5. Inventory Logic
+        function renderInventory() {
+            inventoryList.innerHTML = '';
+            
+            // Si el inventario está vacío
+            if (inventory.length === 0) {
+                inventoryList.innerHTML = `<p class="text-sm text-slate-400 w-full text-center py-4">Tu heladera está vacía. ¡Agregá ingredientes!</p>`;
+                return;
+            }
+
+            inventory.forEach((item, index) => {
+                // Feature: Simulamos que si dice "Tomate" o "Leche", está por vencer ("¡Salvame!")
+                const isExpiring = item.toLowerCase().includes('tomate') || item.toLowerCase().includes('leche');
+                
+                const chip = document.createElement('div');
+                const baseClasses = isExpiring 
+                    ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                    : 'bg-white border-slate-200 text-slate-700';
+                
+                chip.className = `flex items-center gap-2 px-3 py-1.5 rounded-xl border font-semibold text-sm shadow-sm ${baseClasses}`;
+                
+                let html = `<span>${item}</span>`;
+                
+                if (isExpiring) {
+                    html += `<span class="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-black tracking-wider flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> ¡Salvame!</span>`;
+                }
+                
+                html += `<button class="ml-1 text-slate-400 hover:text-rose-500 transition remove-btn" data-index="${index}"><i class="fa-solid fa-xmark"></i></button>`;
+                
+                chip.innerHTML = html;
+                inventoryList.appendChild(chip);
+            });
+
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+                    inventory.splice(idx, 1);
+                    renderInventory();
+                });
+            });
+        }
+
+        addIngredientForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const val = newIngredientInput.value.trim();
+            if (val && !inventory.includes(val)) {
+                inventory.push(val);
+                newIngredientInput.value = '';
+                renderInventory();
+            }
+        });
+
+        // 6. Firestore Logic (Saving/Loading)
+        async function loadInventoryFromCloud() {
+            if (!currentUser || isMocking) {
+                renderInventory(); // Just render mock data
+                return;
+            }
+            
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', 'main');
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    inventory = docSnap.data().items || [];
+                } else {
+                    inventory = ["Tomate 🍅", "Fideos", "Huevo"]; // Default init if no data
+                }
+                renderInventory();
+            } catch (error) {
+                console.error("Error loading inventory:", error);
+                showToast("No se pudo cargar el inventario.", "error");
+                renderInventory();
+            }
+        }
+
+        btnSaveInventory.addEventListener('click', async () => {
+            if (!currentUser) return;
+            
+            const originalText = btnSaveInventory.innerHTML;
+            btnSaveInventory.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Guardando...`;
+            
+            if (isMocking) {
+                setTimeout(() => {
+                    btnSaveInventory.innerHTML = originalText;
+                    showToast("Inventario guardado (Modo Demo).", "success");
+                }, 800);
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory', 'main');
+                await setDoc(docRef, { items: inventory });
+                showToast("¡Inventario guardado en la nube!", "success");
+            } catch (error) {
+                console.error("Error saving:", error);
+                showToast("Error al guardar.", "error");
+            } finally {
+                btnSaveInventory.innerHTML = originalText;
+            }
+        });
+
+        // 7. Auth Event Listeners
+        toggleAuthBtn.addEventListener('click', toggleAuthMode);
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const pass = passInput.value;
+            
+            const originalText = authSubmitBtn.innerText;
+            authSubmitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Cargando...`;
+            authSubmitBtn.disabled = true;
+
+            if (isMocking) {
+                // Mock Login for preview environment if no Firebase config is set
+                setTimeout(() => {
+                    currentUser = { uid: 'mock-user-123', email: email };
+                    handleLoginSuccess();
+                }, 1000);
+                return;
+            }
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                }
+                // onAuthStateChanged will handle the UI swap
+            } catch (error) {
+                authSubmitBtn.innerText = originalText;
+                authSubmitBtn.disabled = false;
+                showToast(error.message.replace('Firebase: ', ''), 'error');
+            }
+        });
+
+        btnLogout.addEventListener('click', () => {
+            if (isMocking) {
+                currentUser = null;
+                handleLogoutSuccess();
+                return;
+            }
+            signOut(auth);
+        });
+
+        // Auth State Observer
+        if (!isMocking) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    handleLoginSuccess();
+                } else {
+                    currentUser = null;
+                    handleLogoutSuccess();
+                }
+            });
+        }
+
+        // State Handlers
+        function handleLoginSuccess() {
+            authView.classList.add('hide');
+            appView.classList.remove('hide');
+            userEmailDisplay.innerText = currentUser.email;
+            
+            authSubmitBtn.innerText = 'Iniciar Sesión';
+            authSubmitBtn.disabled = false;
+            
+            showToast('¡Bienvenido a PickFood!', 'success');
+            loadInventoryFromCloud();
+        }
+
+        function handleLogoutSuccess() {
+            authView.classList.remove('hide');
+            appView.classList.add('hide');
+            emailInput.value = '';
+            passInput.value = '';
+        }
+
+        // Fun interactions
+        btnRoulette.addEventListener('click', () => {
+            btnRoulette.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-3xl"></i><div class="text-left"><span class="block font-black text-lg">Buscando...</span></div>`;
+            setTimeout(() => {
+                btnRoulette.innerHTML = `<i class="fa-solid fa-dice text-3xl"></i><div class="text-left"><span class="block font-black text-lg">Modo Ruleta</span><span class="block text-xs font-medium text-brand-100">¡Sorprendeme!</span></div>`;
+                showToast('¡Te tocó "Tarta de Verduras"!', 'success');
+            }, 1500);
+        });
+
+    </script>
+</body>
+</html>
